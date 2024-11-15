@@ -1,0 +1,241 @@
+-> FOLDER code\server:
++ folders: src
++ files: index.ts, jest.config.js, package-lock.json, package.json, tsconfig.json, tscongif.json, tslint.json
+
+- FILE index.ts - ?
+import express + other libs
+def app ...?
+- FILE jest.config.js - ?
+some configs ?
+- FILE package-lock.json
+packages and rel dependencies (long)
+- FILE package.json
+packages and rel deps (short)
+- FILE tsconfig.json
+config of typescript
+- FILE tscongif.json
+compiler options
+- FILE tslint.json - ?
+more options
+
+
+-> FOLDER code\server\src:
++ folders: components, controllers, dao, db, errors, routers
++ files: helper.ts, routes.ts, utilities.ts
+
+- FILE helper.ts
++ class ErrorHandler
+handle errors
+++ with methods: validateRequest(), registerErrorHandler()
+-- validateRequest(req: any, res: any, next: any)
+validate req obj if prop.ly def acc to middlewares in def of req obj;
+returns:
+if error, res obj with status code 422 and error msg text
+else, next() func
+-- registerErrorHandler(router: express.Application)
+register error ErrorHandler
+ret response obj with status code num and error msg text
+
+- FILE routes.ts
+? "morgan" (web app 1)
++ funcs: initRoutes()
+-- initRoutes(app: express.Application)
+define routes for app: for user, authentication, product, cart
+all routes need Authenticator obj - to authen users, protect routes by req.ing users to be logged in and have correct roles
+register any errors
+
+- FILE utilities.ts
++ class Utility
+utility class
+++ with methods: isManager(), isCustomer()
+-- isManager(user: User): boolean
+check if user has role Manager
+ret boolean: True if manager, else False
+-- isCustomer(user: User): boolean
+check if user has role Customer
+ret boolean: True if customer, else False
+
+
+-> FOLDER code\server\src\components:
++ files: cart.ts, product.ts, user.ts
+
+- FILE cart.ts
++ class cart
+a shopping cart
+++ with methods: constructor()
+-- constructor(id: number, customer: string, paid: boolean, paymentDate: string, total: number, products: Product[])
+create new instance of Cart class
+
+- FILE product.ts
++ class Product
+a prod offered by online store
+++ with methods: constructor()
+-- constructor(code: string, sellingPrice: number, model: string, category: Category, arrivalDate: string | null, sellingDate: string | null, details: string | null)
+create new instance of Product class
++ enum Category
+category of product, valid values: SMARTPHONE, LAPTOP, APPLIANCE
+
+- FILE user.ts
++ class User
+a user in the system
+++ with methods: constructor()
+-- constructor(username: string, name: string, surname: string, role: Role)
+create new instance of User class
++ enum Role
+role of a user, valid values: MANAGER, CUSTOMER
+
+
+-> FOLDER code\server\src\controllers:
++ files: cartController.ts, productController.ts, userController.ts
+
+- FILE cartController.ts
++ class cartController
+controller to manage shopping carts
++ with methods: constructor(), getCart(), addToCart(), checkoutCart(), getCustomerCarts(), removeFromCart(), deleteCart(), deleteAllCarts()
+all methods interact with corresp cartDAO class to rx/wx data
+-- constructor()
+create instance of CartController class
+-- async getCart(user: User)
+? retrieve all carts of user (all checked out ones), or latest not checked out, or all not checked out carts, should be only 1 or could have more?
+! probably there is only 1 not checked out cart -> retrieve this one
+-- async addToCart(user: User, productId: string)
+! add to cart not checked out
+-- async checkoutCart(user: User)
+-- async getCustomerCarts(user: User)
+ret Promise resolving to array only of checked out carts of user
+-- async removeFromCart(user: User, productId: string, cartId: number)
+? should be able to remove prod only from non-checked out cart, right?
+-- async deleteCart(user: User, cartId: number)
+? delete cart with cartId not yet checked out? or could also delete any previuos cart already checked out
+-- async deleteAllCarts()
+? delete all and only not checked out carts, or all carts (both checked out and not), or all and only checked out carts?
+
+- FILE productController.ts
++ class ProductController
+repr controller to manage products
++ with methods: constructor(), registerArrival(), registerProduct(), sellProduct(), getProducts(), getProduct(), getProductsByCategory(), getProductsByModel(), deleteAllProducts(), deleteProduct()
+all methods interact with corresp productDAO class to rx/wx data
+-- constructor()
+-- async registerArrival(model: string, category: string, details: string, quantity: number, arrivalDate: string | null, sellingPrice: number)
+-- async registerProduct(code: string, sellingPrice: number, model: string, category: string, details: string, arrivalDate: string | null)
+-- async sellProduct(code: string, sellingDate: string | null)
+-- async getProducts(sold: string | null)
+-- async getProduct(code: string)
+-- async getProductsByCategory(category: string, sold: string | null)
+-- async getProductsByModel(model: string, sold: string | null)
+-- async deleteAllProducts()
+-- async deleteProduct(code: string)
+
+- FILE userController.ts
++ class UserController
+repr controller to manage users
++ with methods: constructor(), createUser(), getUsers(), getUsersByRole(), getUserByUsername(), deleteUser(), deleteAll()
+all methods interact with corresp userDAO class to rx/wx data
+-- constructor()
+-- async createUser(username: string, name: string, surname: string, password: string, role: string)
+-- async getUsers()
+-- async getUsersByRole(role: string)
+-- async getUserByUsername(username: string)
+-- async deleteUser(username: string)
+-- async deleteAll()
+
+
+-> FOLDER code\server\src\dao:
++ files: cartDAO.ts, productDAO.ts, userDAO.ts
+
+- FILE cartDAO.ts
++ class cartDAO
+class for db interaction for cart-related opers
+/to be implemented/
+
+- FILE productDAO.ts
++ class productDAO
+class for db interaction for product-related opers
+/to be implemented/
+
+- FILE userDAO.ts
++ class userDAO
+class for db interaction for user-related opers
++ with methods: getIsUserAuthenticated(), getUserByUsername()
+-- getIsUserAuthenticated = (username: string, plainPassword: string): Promise<boolean>
+check if info at login is correct
+ret Promise obj resolving to True if user authent, else False
+-- getUserByUsername = (username: string): Promise<User>
+ret Promise obj resolving to User obj for requested username
+
+
+-> FOLDER code\server\src\db:
++ files db.db, db.ts, testdb.db
+
+- FILE db.db
+? how to open it?
+development db
+
+- FILE db.ts
+db connection, use environment var to determine which db to connect to: devop db or test db
+env var specified in file package.json
+
+- FILE testdb.db
+? how to open it?
+test db, separate and != from devop db, avoid corrupting devop db, ensure clean state for each state
+- studentLogs
+- cartProducts
+- carts
+- proposeProducts
+- users
+- sqlb_temp_table_3
+- categorySequence
+
+-> FOLDER code\server\src\errors:
++ files: cartError.ts, productError.ts, userError.ts
+
+- FILE cartError.ts
++ classes CartNotFoundError, ProductInCartError, ProductNotInCartError, WrongUserCartError
+repr error when cart not found, when prod already in cart, when prod not in cart, when cart belongs to another user
++ with methods: constructor(), 1 per class
+
+- FILE productError.ts
++ classes ProductNotFoundError, ProductAlreadyExistsError, ProductSoldError
+repr error when prod is not found, when prod id already exists, when prod is already sold
++ with methods: constructor(), 1 per class
+
+- FILE userError.ts
++ classes UserNotFoundError, UserNotManagerError, UserNotCustomerError, UserAlreadyExistsError
+repr error when a user is not found, when a user is not a manager, when a user is not a customer, when a username is already in use
++ with methods: constructor(), 1 per class
+
+
+-> FOLDER code\server\src\routers:
++ files: auth.ts, cartRoutes.ts, productRoutes.ts, userRoutes.ts
+
+- FILE auth.ts
+
+
+- FILE cartRoutes.ts
+
+
+- FILE productRoutes.ts
+
+
+- FILE userRoutes.ts
+
+
+
+=========================
+Notes on TS syntax:
+
+export default <className> //--> when in a file have only 1 class defined?
+vs
+export {<className1>, <className2>} //--> when in a file have >1 classes defined?
+
+
+method def as
+async <methodName>(<params>) {}
+returns a Promise obj
+
+==============================
+
+? review of user for a product bought by a specific manager
+? review of user for the sw app service
+? review of manager for sw app service
+? in FILE userController.ts, method modifyUser() -> modify name, surname, pswd?, possibly username?
